@@ -12,7 +12,7 @@ Dane pochodzą z symulowanego sklepu internetowego **ShopFlow**, działającego 
 - elektronikę,
 - dom i wnętrza,
 - urodę.
-- 
+  
 ## 🗂️ Dane
 Zbiór obejmuje około **85 000 rekordów** w 5 powiązanych tabelach oraz **24 miesiące historii sprzedaży**:
 
@@ -21,7 +21,6 @@ Zbiór obejmuje około **85 000 rekordów** w 5 powiązanych tabelach oraz **24 
 - `orders` — ok. 20 000 rekordów,
 - `order_items` — ok. 49 000 rekordów,
 - `inventory` — ok. 2 000 rekordów.
--
 ## 🧹 Czyszczenie i przygotowanie danych
 
 Przed rozpoczęciem właściwej analizy przeprowadzono kontrolę jakości danych we wszystkich tabelach.
