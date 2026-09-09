@@ -1,4 +1,4 @@
-# ShopFlow — projekt oczyszczania danych e-commerce
+# ShopFlow - projekt oczyszczania danych e-commerce
 
 ## 🎯 Cel projektu
 
