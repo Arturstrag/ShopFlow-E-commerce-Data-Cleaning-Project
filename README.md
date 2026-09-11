@@ -542,7 +542,7 @@ WHERE NOT EXISTS (
 
 Dzięki temu zachowano historyczne dane sprzedażowe i przywrócono spójność między tabelami.
 
-![Produkt zarchiwizowany](images/Produkt_zarchiwizowany.png)
+![Produkt zarchiwizowany](image/Produkt_zarchiwizowany.png)
 
 ---
 
