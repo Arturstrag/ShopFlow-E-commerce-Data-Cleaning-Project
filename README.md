@@ -1,55 +1,55 @@
-# ShopFlow — projekt oczyszczania danych e-commerce
+# ShopFlow — E-commerce Data Cleaning Project
 
-## 🎯 Cel projektu
+## 🎯 Project objective
 
-Celem projektu było dokładne oczyszczenie i przygotowanie danych sprzedażowych symulowanego sklepu internetowego **ShopFlow** do dalszej analizy.
+The objective of this project was to thoroughly clean and prepare sales data from the simulated **ShopFlow** online store for further analysis.
 
-## 📌 Opis projektu
+## 📌 Project description
 
-Dane pochodzą z symulowanego sklepu internetowego **ShopFlow**, działającego na rynku polskim w branży e-commerce, obejmującej m.in.:
+The data comes from the simulated **ShopFlow** online store operating in the Polish e-commerce market, covering areas such as:
 
-- modę,
-- elektronikę,
-- dom i wnętrza,
-- urodę.
+- fashion,
+- electronics,
+- home and interior,
+- beauty.
 
-Zbiór obejmuje około **85 000 rekordów** w 5 powiązanych tabelach oraz **24 miesiące historii sprzedaży**:
+The dataset contains approximately **85,000 records** across 5 related tables and **24 months of sales history**:
 
-- `customers` — ok. 5 000 rekordów,
-- `products` — ok. 2 000 rekordów,
-- `orders` — ok. 20 000 rekordów,
-- `order_items` — ok. 49 000 rekordów,
-- `inventory` — ok. 2 000 rekordów.
+- `customers` — approx. 5,000 records,
+- `products` — approx. 2,000 records,
+- `orders` — approx. 20,000 records,
+- `order_items` — approx. 49,000 records,
+- `inventory` — approx. 2,000 records.
 
-## 🧹 Czyszczenie i przygotowanie danych
+## 🧹 Data cleaning and preparation
 
-Przed rozpoczęciem właściwej analizy przeprowadzono kontrolę jakości danych we wszystkich tabelach.
+Before starting the actual analysis, data quality was checked in all tables.
 
-Zidentyfikowano m.in.:
+The following issues were identified, among others:
 
-- braki danych,
-- duplikaty,
-- niespójne formaty,
-- błędne wartości,
-- literówki,
-- wartości odstające,
-- problemy z integralnością danych.
+- missing data,
+- duplicates,
+- inconsistent formats,
+- invalid values,
+- typos,
+- outliers,
+- data integrity problems.
 
-Poniżej przedstawiono najważniejsze problemy oraz wybrane fragmenty kodu SQL pokazujące sposób ich rozwiązania. Wszystkie zapytania znajdują się w głównym skrypcie SQL projektu.
+The most important issues and selected SQL fragments showing how they were addressed are presented below. All queries are included in the project's main SQL script.
 
 ---
 
-## 👤 Tabela `customers`
+## 👤 `customers` table
 
-Tabela `customers` została sprawdzona pod kątem duplikatów `customer_id`, poprawności imion i nazwisk, pustych wartości, zbędnych spacji oraz obecności cyfr lub niepożądanych znaków.
+The `customers` table was checked for duplicate `customer_id` values, valid first and last names, empty values, unnecessary spaces, and the presence of digits or unwanted characters.
 
-Nie znaleziono błędów w kolumnach `customer_id`, `first_name` i `last_name`.
+No errors were found in the `customer_id`, `first_name`, or `last_name` columns.
 
-### 1. Niespójne formaty numerów telefonów
+### 1. Inconsistent phone number formats
 
-Numery telefonów występowały w wielu różnych formatach, m.in. z prefiksem `+48`, bez prefiksu, ze spacjami lub myślnikami.
+Phone numbers appeared in many different formats, including numbers with the `+48` prefix, without the prefix, and with spaces or hyphens.
 
-Numery zostały ustandaryzowane do formatu `+48XXXXXXXXX`. Brakujące wartości oznaczono jako `unknown`. Dodatkowo zweryfikowano długość numerów telefonów.
+Phone numbers were standardized to the `+48XXXXXXXXX` format. Missing values were marked as `unknown`. The length of phone numbers was also verified.
 
 ```sql
 UPDATE customers
@@ -66,25 +66,25 @@ WHERE phone <> 'unknown'
   AND LENGTH(REGEXP_REPLACE(phone, '[^0-9]', '', 'g')) >= 9;
 ```
 
-**Przed czyszczeniem**
+**Before cleaning**
 
-![Różne formaty telefonów](image/surowe_dane/telefony_rozne_formaty_customers.png)
+![Different phone number formats](image/surowe_dane/telefony_rozne_formaty_customers.png)
 
-**Po czyszczeniu**
+**After cleaning**
 
-![Telefony po czyszczeniu](image/oczyszczone_dane/telefony_po_czyszczeniu.png)
+![Phone numbers after cleaning](image/oczyszczone_dane/telefony_po_czyszczeniu.png)
 
-**Brakujące numery oznaczone jako `unknown`**
+**Missing phone numbers marked as `unknown`**
 
-![Brakujące telefony oznaczone jako unknown](image/oczyszczone_dane/telefony_unknown.png)
+![Missing phone numbers marked as unknown](image/oczyszczone_dane/telefony_unknown.png)
 
 ---
 
-### 2. Niepoprawne kody pocztowe
+### 2. Invalid postal codes
 
-W kolumnie `postal_code` część kodów pocztowych klientów nie była zgodna z polskim formatem `XX-XXX`.
+Some values in the `postal_code` column did not follow the Polish `XX-XXX` format.
 
-Rekordy, których nie można było jednoznacznie poprawić, nie zostały automatycznie zmienione na potencjalnie błędną wartość. Zostały oznaczone do dalszej weryfikacji.
+Records that could not be corrected unambiguously were not automatically replaced with potentially incorrect values. Instead, they were marked for further review.
 
 ```sql
 UPDATE customers
@@ -92,44 +92,44 @@ SET postal_code = 'do weryf'
 WHERE postal_code !~ '^\d{2}-\d{3}$';
 ```
 
-**Przed czyszczeniem**
+**Before cleaning**
 
-![Niepoprawne kody pocztowe](image/surowe_dane/kody_pocztowe_customers.png)
+![Invalid postal codes](image/surowe_dane/kody_pocztowe_customers.png)
 
-**Rekordy oznaczone do weryfikacji**
+**Records marked for review**
 
-![Kody pocztowe do weryfikacji](image/oczyszczone_dane/kody_pocztowe_do_weryfikacji.png)
+![Postal codes requiring review](image/oczyszczone_dane/kody_pocztowe_do_weryfikacji.png)
 
 ---
 
-### 3. Niespójne adresy e-mail
+### 3. Inconsistent email addresses
 
-W adresach e-mail występowały różnice w wielkości liter, zbędne spacje oraz brak jednolitego formatu.
+Email addresses differed in letter case, contained unnecessary spaces, or lacked a consistent format.
 
-Adresy zostały ujednolicone przez usunięcie zbędnych spacji i konwersję do małych liter.
+Addresses were standardized by removing unnecessary spaces and converting them to lowercase.
 
 ```sql
 UPDATE customers
 SET email = LOWER(TRIM(email));
 ```
 
-Dodatkowo znormalizowany adres e-mail wykorzystano później do identyfikacji duplikatów klientów.
+The normalized email address was later also used to identify duplicate customers.
 
-**Przed czyszczeniem**
+**Before cleaning**
 
-![Niespójne adresy e-mail](image/surowe_dane/Emaile_customers.png)
+![Inconsistent email addresses](image/surowe_dane/Emaile_customers.png)
 
-**Po czyszczeniu**
+**After cleaning**
 
-![E-maile po czyszczeniu](image/oczyszczone_dane/emaile_po_czyszczeniu.png)
+![Emails after cleaning](image/oczyszczone_dane/emaile_po_czyszczeniu.png)
 
 ---
 
-### 4. Literówki i niespójne nazwy miast
+### 4. Typos and inconsistent city names
 
-W kolumnie `city` występowały różne warianty tej samej miejscowości, np. `Warsszawa` i `Warszawa`, a także problemy z wielkością liter.
+The `city` column contained different variants of the same locality, such as `Warsszawa` and `Warszawa`, as well as inconsistent capitalization.
 
-Zamiast tworzyć wiele osobnych instrukcji `UPDATE`, utworzono tabelę mapującą błędne warianty na kanoniczne nazwy miast. Poniżej pokazano skrócony fragment mapowania — pełna lista znajduje się w skrypcie SQL.
+Instead of creating many separate `UPDATE` statements, a mapping table was created to map incorrect variants to canonical city names. The shortened mapping example is shown below; the full list is included in the SQL script.
 
 ```sql
 CREATE TABLE IF NOT EXISTS city_mapping (
@@ -151,23 +151,23 @@ FROM city_mapping m
 WHERE LOWER(c.city) = m.wariant;
 ```
 
-**Przed czyszczeniem**
+**Before cleaning**
 
-![Niespójne nazwy miast](image/surowe_dane/miasta_customers.png)
+![Inconsistent city names](image/surowe_dane/miasta_customers.png)
 
-**Po czyszczeniu**
+**After cleaning**
 
-![Miasta po czyszczeniu](image/oczyszczone_dane/miasta_po_czyszczeniu.png)
+![Cities after cleaning](image/oczyszczone_dane/miasta_po_czyszczeniu.png)
 
 ---
 
-### 5. Duplikaty klientów
+### 5. Duplicate customers
 
-Wykryto rekordy klientów posiadających ten sam znormalizowany adres e-mail.
+Records belonging to customers with the same normalized email address were detected.
 
-Duplikaty zostały scalone na podstawie `LOWER(TRIM(email))`. Za rekord główny uznano klienta z najwcześniejszą datą rejestracji, a przy remisie — z najniższym `customer_id`.
+Duplicates were merged based on `LOWER(TRIM(email))`. The customer with the earliest registration date was retained; in the event of a tie, the customer with the lowest `customer_id` was retained.
 
-Przed usunięciem duplikatów ich zamówienia zostały przypisane do zachowanego rekordu klienta. Dzięki temu nie utracono historii zakupowej.
+Before deleting duplicates, their orders were reassigned to the retained customer record. This prevented the loss of purchase history.
 
 ```sql
 WITH ranked AS (
@@ -196,7 +196,7 @@ FROM mapowanie m
 WHERE o.customer_id = m.stary_id;
 ```
 
-Po przepięciu historii zamówień nadmiarowe rekordy zostały usunięte.
+After the order history had been reassigned, the redundant records were deleted.
 
 ```sql
 WITH ranked AS (
@@ -216,22 +216,22 @@ WHERE customer_id IN (
 );
 ```
 
-![Duplikaty klientów](image/surowe_dane/duplikaty_klient%C3%B3w_customers.png)
+![Duplicate customers](image/surowe_dane/duplikaty_klient%C3%B3w_customers.png)
 
 ---
 
-### 6. Dodatkowe duplikaty z sufiksem `_dup`
+### 6. Additional duplicates with the `_dup` suffix
 
-Część duplikatów posiadała zmodyfikowany adres e-mail, np.:
+Some duplicates had a modified email address, for example:
 
 ```text
 jan.kowalski@gmail.com
 jan.kowalski_dup@gmail.com
 ```
 
-Takie rekordy nie zostały wykryte przez standardowe grupowanie po identycznym, znormalizowanym adresie e-mail, dlatego wymagały dodatkowej reguły identyfikacji.
+These records were not detected by standard grouping based on identical normalized email addresses, so an additional identification rule was required.
 
-Najpierw zamówienia przypisano do oryginalnego klienta, a następnie usunięto techniczne duplikaty z sufiksem `_dup`.
+First, orders were reassigned to the original customer. The technical duplicates with the `_dup` suffix were then removed.
 
 ```sql
 UPDATE orders o
@@ -248,21 +248,21 @@ FROM (
 WHERE o.customer_id = p.stary_id;
 ```
 
-**Duplikaty z sufiksem `_dup`**
+**Duplicates with the `_dup` suffix**
 
-![Duplikaty z sufiksem dup](image/surowe_dane/dodatkowe_duplikaty_customers.png)
+![Duplicates with the dup suffix](image/surowe_dane/dodatkowe_duplikaty_customers.png)
 
-**E-maile po czyszczeniu**
+**Emails after cleaning**
 
-![E-maile po czyszczeniu](image/oczyszczone_dane/emaile_po_czyszczeniu.png)
+![Emails after cleaning](image/oczyszczone_dane/emaile_po_czyszczeniu.png)
 
 ---
 
-### 7. Klienci bez zamówień
+### 7. Customers without orders
 
-Zidentyfikowano klientów, którzy założyli konto, ale nie złożyli żadnego zamówienia.
+Customers who had created an account but had not placed any orders were identified.
 
-Rekordy nie zostały usunięte, ponieważ nie stanowią błędu danych. Utworzono widok `klienci_bez_zamowien`, aby umożliwić dalszą analizę tego segmentu pod kątem aktywacji, retencji i konwersji klientów.
+These records were not deleted because they do not represent a data error. A `klienci_bez_zamowien` view was created to enable further analysis of this segment in terms of customer activation, retention, and conversion.
 
 ```sql
 CREATE OR REPLACE VIEW klienci_bez_zamowien AS
@@ -275,15 +275,15 @@ WHERE o.order_id IS NULL;
 
 ---
 
-## 📦 Tabela `products`
+## 📦 `products` table
 
-W tabeli produktów problemy dotyczyły przede wszystkim cen oraz niespójnych kategorii produktowych.
+The main issues in the products table concerned prices and inconsistent product categories.
 
-### 1. Produkty z ceną równą `0`
+### 1. Products with a price of `0`
 
-W katalogu znaleziono produkty, których `unit_price` wynosiło `0`.
+Products with a `unit_price` of `0` were found in the catalog.
 
-Rekordy nie zostały automatycznie usunięte ani otrzymały sztucznie wyliczonej ceny. Zostały oznaczone do weryfikacji, ponieważ bez dodatkowych informacji biznesowych nie można było jednoznacznie stwierdzić, czy cena była błędem.
+These records were neither automatically deleted nor assigned an artificially calculated price. They were marked for review because, without additional business information, it was impossible to determine unambiguously whether the price was incorrect.
 
 ```sql
 ALTER TABLE products
@@ -294,21 +294,21 @@ SET wymaga_weryfikacji = TRUE
 WHERE unit_price <= 0;
 ```
 
-**Przed oznaczeniem**
+**Before being flagged**
 
-![Produkty z ceną 0](image/surowe_dane/cena_0_products.png)
+![Products with a price of 0](image/surowe_dane/cena_0_products.png)
 
-**Po oznaczeniu do weryfikacji**
+**After being flagged for review**
 
-![Produkty z ceną oznaczoną do weryfikacji](image/oczyszczone_dane/cena_oflagowana.png)
+![Products with flagged prices](image/oczyszczone_dane/cena_oflagowana.png)
 
 ---
 
-### 2. Niespójne kategorie produktów
+### 2. Inconsistent product categories
 
-Nazwy kategorii występowały w różnych wariantach: z różną wielkością liter, dodatkowymi spacjami oraz w polskiej i angielskiej wersji językowej.
+Category names appeared in different variants: with different capitalization, additional spaces, and Polish or English wording.
 
-Kategorie zostały sprowadzone do jednego zestawu wartości. Przykład:
+Categories were standardized to a single set of values. Example:
 
 ```sql
 UPDATE products
@@ -324,21 +324,21 @@ SET category = 'Uroda'
 WHERE LOWER(TRIM(category)) IN ('uroda', 'beauty');
 ```
 
-**Przed czyszczeniem**
+**Before cleaning**
 
-![Niespójne kategorie produktów](image/surowe_dane/kategorie_products.png)
+![Inconsistent product categories](image/surowe_dane/kategorie_products.png)
 
-**Po czyszczeniu**
+**After cleaning**
 
-![Kategorie po czyszczeniu](image/oczyszczone_dane/kategorie_po_czyszczeniu.png)
+![Categories after cleaning](image/oczyszczone_dane/kategorie_po_czyszczeniu.png)
 
 ---
 
-### 3. Wartości odstające cen produktów
+### 3. Product price outliers
 
-W danych występowały produkty o cenach znacznie wyższych niż typowe ceny w danej kategorii.
+The data contained products with prices significantly higher than typical prices in their respective categories.
 
-Potencjalne wartości odstające zostały wykryte metodą statystyczną **IQR (Interquartile Range)** osobno dla każdej kategorii produktowej.
+Potential outliers were detected using the **IQR (Interquartile Range)** statistical method separately for each product category.
 
 ```sql
 WITH kwartyle AS (
@@ -364,23 +364,23 @@ WHERE p.unit_price > k.q3 + 1.5 * (k.q3 - k.q1)
 ORDER BY p.unit_price DESC;
 ```
 
-Rekordy nie zostały automatycznie usunięte, ponieważ wysoka cena produktu nie musi oznaczać błędu danych. W rzeczywistym projekcie wymagałyby dodatkowej weryfikacji biznesowej.
+The records were not deleted automatically because a high product price does not necessarily indicate a data error. In a real-world project, they would require additional business verification.
 
-![Produkty z nietypową ceną](image/surowe_dane/produkty_z_dziwn%C4%85_cen%C4%85.png)
+![Products with unusual prices](image/surowe_dane/produkty_z_dziwn%C4%85_cen%C4%85.png)
 
 ---
 
-## 🧾 Tabela `orders`
+## 🧾 `orders` table
 
-W tabeli zamówień zidentyfikowano problemy związane z duplikacją rekordów, formatem dat oraz brakami w metodzie płatności.
+The following issues were identified in the orders table: duplicate records, inconsistent date formats, and missing payment methods.
 
-### 1. Duplikaty zamówień
+### 1. Duplicate orders
 
-Wykryto klientów posiadających więcej niż jedno zamówienie o tej samej dacie.
+Customers with more than one order placed on the same date were detected.
 
-Duplikaty zostały identyfikowane na podstawie `customer_id` i `order_date`. W każdej grupie zachowano rekord z najniższym `order_id`.
+Duplicates were identified based on `customer_id` and `order_date`. Within each group, the record with the lowest `order_id` was retained.
 
-Ze względu na relację z `order_items` najpierw usunięto pozycje należące do nadmiarowych zamówień, a następnie same rekordy z tabeli `orders`.
+Because of the relationship with `order_items`, items belonging to redundant orders were deleted first, followed by the redundant records in the `orders` table.
 
 ```sql
 WITH ranked AS (
@@ -400,19 +400,19 @@ WHERE order_id IN (
 );
 ```
 
-![Duplikaty zamówień](image/surowe_dane/duplikaty_zam%C3%B3wie%C5%84_orders.png)
+![Duplicate orders](image/surowe_dane/duplikaty_zam%C3%B3wie%C5%84_orders.png)
 
 ---
 
-### 2. Niespójne formaty dat
+### 2. Inconsistent date formats
 
-Daty zamówień występowały w kilku formatach, np.:
+Order dates appeared in several formats, for example:
 
 - `08.09.2024`,
 - `26/12/2024`,
 - `2024-12-26`.
 
-Najpierw ujednolicono zapis do formatu `YYYY-MM-DD`, a następnie zmieniono typ kolumny na `DATE`.
+The dates were first standardized to the `YYYY-MM-DD` format, after which the column type was changed to `DATE`.
 
 ```sql
 UPDATE orders
@@ -434,21 +434,21 @@ ALTER COLUMN order_date TYPE DATE
 USING order_date::DATE;
 ```
 
-**Przed czyszczeniem**
+**Before cleaning**
 
-![Różne formaty dat](image/surowe_dane/rozne_formaty_dat_orders.png)
+![Different date formats](image/surowe_dane/rozne_formaty_dat_orders.png)
 
-**Po czyszczeniu**
+**After cleaning**
 
-![Daty po naprawie](image/oczyszczone_dane/daty_po_naprawie.png)
+![Dates after correction](image/oczyszczone_dane/daty_po_naprawie.png)
 
 ---
 
-### 3. Braki w metodzie płatności
+### 3. Missing payment methods
 
-W kolumnie `payment_method` występowały puste wartości zapisane jako pusty tekst.
+The `payment_method` column contained empty values stored as empty strings.
 
-Puste ciągi znaków zostały przekonwertowane do `NULL`, a następnie sprawdzono ich zależność od statusu zamówienia.
+Empty strings were converted to `NULL`, and their relationship with order status was then checked.
 
 ```sql
 UPDATE orders
@@ -461,19 +461,19 @@ WHERE payment_method IS NULL
 GROUP BY order_status;
 ```
 
-Braki występowały przy zamówieniach anulowanych (`Cancelled`), dlatego uznano je za logicznie dopuszczalne i pozostawiono bez dalszych zmian.
+The missing values occurred in cancelled orders (`Cancelled`), so they were considered logically acceptable and left unchanged.
 
-![Brak płatności](image/surowe_dane/Tabela_order_payment_method.png)
+![Missing payment methods](image/surowe_dane/Tabela_order_payment_method.png)
 
 ---
 
-## 🛒 Tabela `order_items`
+## 🛒 `order_items` table
 
-### 1. Ujemne wartości `quantity`
+### 1. Negative `quantity` values
 
-W tabeli pozycji zamówień występowały rekordy z ujemną liczbą produktów.
+Records with a negative number of products appeared in the order items table.
 
-Ujemne wartości zostały zinterpretowane jako zwroty zapisane w niewłaściwym miejscu. Informacje o nich przeniesiono do osobnej tabeli `returns`, a następnie odpowiadające im rekordy usunięto z `order_items`.
+The negative values were interpreted as returns recorded in the wrong place. Their information was moved to a separate `returns` table, and the corresponding records were then deleted from `order_items`.
 
 ```sql
 CREATE TABLE IF NOT EXISTS returns (
@@ -492,23 +492,23 @@ DELETE FROM order_items
 WHERE quantity < 0;
 ```
 
-Takie podejście pozwoliło rozdzielić sprzedaż od zwrotów bez utraty informacji o zwróconej ilości.
+This approach separated sales from returns without losing information about the returned quantity.
 
-**Ujemne wartości `quantity`**
+**Negative `quantity` values**
 
-![Ujemne quantity](image/surowe_dane/ujemne_quantity_order_items.png)
+![Negative quantity values](image/surowe_dane/ujemne_quantity_order_items.png)
 
-**Tabela `returns`**
+**`returns` table**
 
-![Tabela returns](image/oczyszczone_dane/return.png)
+![Returns table](image/oczyszczone_dane/return.png)
 
 ---
 
-### 2. Osierocone `product_id`
+### 2. Orphaned `product_id` values
 
-W tabeli `order_items` występowały osierocone `product_id`, czyli rekordy odwołujące się do produktów, które nie istniały już w tabeli `products`.
+The `order_items` table contained orphaned `product_id` values: records referring to products that no longer existed in the `products` table.
 
-Zamiast usuwać historyczne pozycje sprzedażowe utworzono techniczny rekord produktu z `product_id = -1`, a następnie przypisano do niego wszystkie osierocone pozycje.
+Instead of deleting historical sales items, a technical product record with `product_id = -1` was created. All orphaned items were then assigned to it.
 
 ```sql
 INSERT INTO products (
@@ -540,21 +540,21 @@ WHERE NOT EXISTS (
 );
 ```
 
-Dzięki temu zachowano historyczne dane sprzedażowe i przywrócono spójność między tabelami.
+This preserved historical sales data and restored consistency between the tables.
 
-![Produkt zarchiwizowany](image/oczyszczone_dane/Produkt_zarchiwizowany.png)
+![Archived product](image/oczyszczone_dane/Produkt_zarchiwizowany.png)
 
 ---
 
-## 🏭 Tabela `inventory`
+## 🏭 `inventory` table
 
-W danych magazynowych zidentyfikowano problemy związane ze stanami magazynowymi oraz formatem lokalizacji.
+The inventory data contained issues related to stock levels and location formatting.
 
-### 1. Ujemne stany magazynowe
+### 1. Negative inventory levels
 
-W kolumnie `stock_quantity` występowały wartości poniżej zera.
+Values below zero appeared in the `stock_quantity` column.
 
-Ujemne wartości zostały zastąpione wartością `0`, ponieważ fizyczny stan magazynowy nie może być ujemny. Rekordy te nadal wymagają weryfikacji biznesowej, aby ustalić przyczynę wystąpienia problemu.
+Negative values were replaced with `0` because physical inventory cannot be negative. These records still require business verification to determine the cause of the issue.
 
 ```sql
 UPDATE inventory
@@ -562,39 +562,39 @@ SET stock_quantity = 0
 WHERE stock_quantity < 0;
 ```
 
-![Ujemne stany magazynowe](image/surowe_dane/ujemne_stock_quantity_inventory.png)
+![Negative inventory levels](image/surowe_dane/ujemne_stock_quantity_inventory.png)
 
 ---
 
-### 2. Zbędne spacje w lokalizacji magazynowej
+### 2. Unnecessary spaces in warehouse locations
 
-W kolumnie `warehouse_location` występowały dodatkowe spacje. Wartości zostały oczyszczone przy użyciu funkcji `TRIM()`.
+The `warehouse_location` column contained extra spaces. The values were cleaned using the `TRIM()` function.
 
 ```sql
 UPDATE inventory
 SET warehouse_location = TRIM(warehouse_location);
 ```
 
-**Przed czyszczeniem**
+**Before cleaning**
 
-![Spacje w lokalizacji magazynowej](image/surowe_dane/spacje_warehouse_inventory.png)
+![Spaces in warehouse locations](image/surowe_dane/spacje_warehouse_inventory.png)
 
-**Po czyszczeniu**
+**After cleaning**
 
-![Lokalizacje magazynowe bez zbędnych spacji](image/oczyszczone_dane/warehouse_bez_spacji.png)
+![Warehouse locations without unnecessary spaces](image/oczyszczone_dane/warehouse_bez_spacji.png)
 
 ---
 
-## ✅ Podsumowanie
+## ✅ Summary
 
-W ramach projektu:
+As part of the project:
 
-- przeprowadzono kontrolę jakości danych w 5 tabelach,
-- ujednolicono formaty danych tekstowych, dat, numerów telefonów i adresów e-mail,
-- wykryto i obsłużono duplikaty przy zachowaniu powiązanej historii zamówień,
-- zidentyfikowano wartości odstające metodą IQR oraz rekordy wymagające weryfikacji biznesowej,
-- naprawiono wybrane problemy z integralnością referencyjną,
-- zachowano historyczne dane tam, gdzie automatyczne usunięcie mogłoby prowadzić do utraty informacji,
-- utworzono dodatkowe struktury pomocnicze, m.in. tabelę `returns`, tabelę `city_mapping` oraz widok `klienci_bez_zamowien`.
+- data quality was checked across 5 tables,
+- text formats, dates, phone numbers, and email addresses were standardized,
+- duplicates were detected and handled while preserving related order history,
+- outliers were identified using the IQR method, along with records requiring business verification,
+- selected referential integrity issues were fixed,
+- historical data was preserved wherever automatic deletion could have led to information loss,
+- additional supporting structures were created, including the `returns` table, the `city_mapping` table, and the `klienci_bez_zamowien` view.
 
-Oczyszczone dane posłużyły do właściwej analizy
+The cleaned data was used for the actual analysis.
