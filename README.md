@@ -2,7 +2,7 @@
 
 ## 🎯 Project objective
 
-The objective of this project was to thoroughly clean and prepare sales data from the simulated **ShopFlow** online store for further analysis.
+The objective of this project was to thoroughly clean and prepare sales data from the simulated **ShopFlow** online store for further analysis. Projekt jest częścią analizy sklepu ShopFlow [ShopFlow – E-commerce Data Analysis](https://github.com/Arturstrag/ShopFlow-E-commerce-Data-Analysis)
 
 ## 📚 Table of Contents
 
@@ -98,11 +98,11 @@ WHERE phone <> 'unknown'
 
 **Before cleaning**
 
-![Different phone number formats](image/surowe_dane/telefony_rozne_formaty_customers.png)
+![Different phone number formats](image/raw_data/telefony_rozne_formaty_customers.png)
 
 **After cleaning**
 
-![Phone numbers after cleaning](image/oczyszczone_dane/telefony_po_czyszczeniu.png)
+![Phone numbers after cleaning](image/clean_data/telefony_po_czyszczeniu.png)
 
 **Missing phone numbers marked as `unknown`**
 
@@ -124,11 +124,11 @@ WHERE postal_code !~ '^\d{2}-\d{3}$';
 
 **Before cleaning**
 
-![Invalid postal codes](image/surowe_dane/kody_pocztowe_customers.png)
+![Invalid postal codes](image/raw_data/kody_pocztowe_customers.png)
 
 **Records marked for review**
 
-![Postal codes requiring review](image/oczyszczone_dane/kody_pocztowe_do_weryfikacji.png)
+![Postal codes requiring review](image/clean_data/kody_pocztowe_do_weryfikacji.png)
 
 ---
 
@@ -147,11 +147,11 @@ The normalized email address was later also used to identify duplicate customers
 
 **Before cleaning**
 
-![Inconsistent email addresses](image/surowe_dane/Emaile_customers.png)
+![Inconsistent email addresses](image/raw_data/Emaile_customers.png)
 
 **After cleaning**
 
-![Emails after cleaning](image/oczyszczone_dane/emaile_po_czyszczeniu.png)
+![Emails after cleaning](image/clean_data/emaile_po_czyszczeniu.png)
 
 ---
 
@@ -183,11 +183,11 @@ WHERE LOWER(c.city) = m.wariant;
 
 **Before cleaning**
 
-![Inconsistent city names](image/surowe_dane/miasta_customers.png)
+![Inconsistent city names](image/raw_data/miasta_customers.png)
 
 **After cleaning**
 
-![Cities after cleaning](image/oczyszczone_dane/miasta_po_czyszczeniu.png)
+![Cities after cleaning](image/clean_data/miasta_po_czyszczeniu.png)
 
 ---
 
@@ -246,7 +246,7 @@ WHERE customer_id IN (
 );
 ```
 
-![Duplicate customers](image/surowe_dane/duplikaty_klient%C3%B3w_customers.png)
+![Duplicate customers](image/raw_data/duplikaty_klient%C3%B3w_customers.png)
 
 ---
 
@@ -280,11 +280,11 @@ WHERE o.customer_id = p.stary_id;
 
 **Duplicates with the `_dup` suffix**
 
-![Duplicates with the dup suffix](image/surowe_dane/dodatkowe_duplikaty_customers.png)
+![Duplicates with the dup suffix](image/raw_data/dodatkowe_duplikaty_customers.png)
 
 **Emails after cleaning**
 
-![Emails after cleaning](image/oczyszczone_dane/emaile_po_czyszczeniu.png)
+![Emails after cleaning](image/clean_data/emaile_po_czyszczeniu.png)
 
 ---
 
@@ -326,11 +326,11 @@ WHERE unit_price <= 0;
 
 **Before being flagged**
 
-![Products with a price of 0](image/surowe_dane/cena_0_products.png)
+![Products with a price of 0](image/raw_data/cena_0_products.png)
 
 **After being flagged for review**
 
-![Products with flagged prices](image/oczyszczone_dane/cena_oflagowana.png)
+![Products with flagged prices](image/clean_data/cena_oflagowana.png)
 
 ---
 
@@ -356,11 +356,11 @@ WHERE LOWER(TRIM(category)) IN ('uroda', 'beauty');
 
 **Before cleaning**
 
-![Inconsistent product categories](image/surowe_dane/kategorie_products.png)
+![Inconsistent product categories](image/raw_data/kategorie_products.png)
 
 **After cleaning**
 
-![Categories after cleaning](image/oczyszczone_dane/kategorie_po_czyszczeniu.png)
+![Categories after cleaning](image/clean_data/kategorie_po_czyszczeniu.png)
 
 ---
 
@@ -396,7 +396,7 @@ ORDER BY p.unit_price DESC;
 
 The records were not deleted automatically because a high product price does not necessarily indicate a data error. In a real-world project, they would require additional business verification.
 
-![Products with unusual prices](image/surowe_dane/produkty_z_dziwn%C4%85_cen%C4%85.png)
+![Products with unusual prices](image/raw_data/produkty_z_dziwn%C4%85_cen%C4%85.png)
 
 ---
 
@@ -430,7 +430,7 @@ WHERE order_id IN (
 );
 ```
 
-![Duplicate orders](image/surowe_dane/duplikaty_zam%C3%B3wie%C5%84_orders.png)
+![Duplicate orders](image/raw_data/duplikaty_zam%C3%B3wie%C5%84_orders.png)
 
 ---
 
@@ -466,11 +466,11 @@ USING order_date::DATE;
 
 **Before cleaning**
 
-![Different date formats](image/surowe_dane/rozne_formaty_dat_orders.png)
+![Different date formats](image/raw_data/rozne_formaty_dat_orders.png)
 
 **After cleaning**
 
-![Dates after correction](image/oczyszczone_dane/daty_po_naprawie.png)
+![Dates after correction](image/clean_data/daty_po_naprawie.png)
 
 ---
 
@@ -493,7 +493,7 @@ GROUP BY order_status;
 
 The missing values occurred in cancelled orders (`Cancelled`), so they were considered logically acceptable and left unchanged.
 
-![Missing payment methods](image/surowe_dane/Tabela_order_payment_method.png)
+![Missing payment methods](image/raw_data/Tabela_order_payment_method.png)
 
 ---
 
@@ -526,11 +526,11 @@ This approach separated sales from returns without losing information about the 
 
 **Negative `quantity` values**
 
-![Negative quantity values](image/surowe_dane/ujemne_quantity_order_items.png)
+![Negative quantity values](image/raw_data/ujemne_quantity_order_items.png)
 
 **`returns` table**
 
-![Returns table](image/oczyszczone_dane/return.png)
+![Returns table](image/clean_data/return.png)
 
 ---
 
@@ -572,7 +572,7 @@ WHERE NOT EXISTS (
 
 This preserved historical sales data and restored consistency between the tables.
 
-![Archived product](image/oczyszczone_dane/Produkt_zarchiwizowany.png)
+![Archived product](image/clean_data/Produkt_zarchiwizowany.png)
 
 ---
 
@@ -592,7 +592,7 @@ SET stock_quantity = 0
 WHERE stock_quantity < 0;
 ```
 
-![Negative inventory levels](image/surowe_dane/ujemne_stock_quantity_inventory.png)
+![Negative inventory levels](image/raw_data/ujemne_stock_quantity_inventory.png)
 
 ---
 
@@ -607,11 +607,11 @@ SET warehouse_location = TRIM(warehouse_location);
 
 **Before cleaning**
 
-![Spaces in warehouse locations](image/surowe_dane/spacje_warehouse_inventory.png)
+![Spaces in warehouse locations](image/raw_data/spacje_warehouse_inventory.png)
 
 **After cleaning**
 
-![Warehouse locations without unnecessary spaces](image/oczyszczone_dane/warehouse_bez_spacji.png)
+![Warehouse locations without unnecessary spaces](image/clean_data/warehouse_bez_spacji.png)
 
 ---
 
