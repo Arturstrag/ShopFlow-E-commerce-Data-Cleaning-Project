@@ -2,7 +2,7 @@
 
 ## 🎯 Project objective
 
-The objective of this project was to thoroughly clean and prepare sales data from the simulated **ShopFlow** online store for further analysis. Projekt jest częścią analizy sklepu ShopFlow [ShopFlow – E-commerce Data Analysis](https://github.com/Arturstrag/ShopFlow-E-commerce-Data-Analysis)
+The objective of this project was to thoroughly clean and prepare sales data from the simulated **ShopFlow** online store for further analysis. This project is part of the main data analysis project: [ShopFlow – E-commerce Data Analysis](https://github.com/Arturstrag/ShopFlow-E-commerce-Data-Analysis)
 
 ## 📚 Table of Contents
 
