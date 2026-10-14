@@ -6,7 +6,7 @@ The objective of this project was to thoroughly clean and prepare sales data fro
 
 ## 📚 Table of Contents
 
-
+- [🔧 Tools and Technologies](#-tools-and-technologies)
 - [📌 Dataset description](#-dataset-description)
 - [🧹 Data cleaning and preparation](#-data-cleaning-and-preparation)
 - [Cleaning Steps](#cleaning-steps)
@@ -33,6 +33,9 @@ The objective of this project was to thoroughly clean and prepare sales data fro
     - [1. Negative inventory levels](#1-negative-inventory-levels)
     - [2. Unnecessary spaces in warehouse locations](#2-unnecessary-spaces-in-warehouse-locations)
 - [✅ Summary](#-summary)
+
+## 🔧 Tools and Technologies
+- **PostgreSQL, DBeaver** - data cleaning, validation for analysis.
 
 ## 📌 Dataset description
 
@@ -81,6 +84,8 @@ Phone numbers appeared in many different formats, including numbers with the `+4
 
 Phone numbers were standardized to the `+48XXXXXXXXX` format. Missing values were marked as `unknown`. The length of phone numbers was also verified.
 
+
+
 ```sql
 UPDATE customers
 SET phone = 'unknown'
@@ -108,6 +113,9 @@ WHERE phone <> 'unknown'
 
 ![Missing phone numbers marked as unknown](image/clean_data/telefony_unknown.png)
 
+Standardizing numbers to `+48XXXXXXXXX` helps customer service agents contact buyers and makes phone data easier to use in CRM tools and automated notifications. Missing numbers were labeled `unknown` rather than removing otherwise useful customer records.
+
+**Potential improvement:** Add a separate country calling code field and validate the length and format when a number is entered.
 ---
 
 #### 2. Invalid postal codes
@@ -115,6 +123,7 @@ WHERE phone <> 'unknown'
 Some values in the `postal_code` column did not follow the Polish `XX-XXX` format.
 
 Records that could not be corrected unambiguously were not automatically replaced with potentially incorrect values. Instead, they were marked for further review.
+
 
 ```sql
 UPDATE customers
@@ -129,6 +138,10 @@ WHERE postal_code !~ '^\d{2}-\d{3}$';
 **Records marked for review**
 
 ![Postal codes requiring review](image/clean_data/kody_pocztowe_do_weryfikacji.png)
+
+Uncertain postal codes were flagged instead of being guessed: an incorrect automatic correction might result in failed deliveries, extra logistics costs, and customer dissatisfaction.
+
+**Potential improvement:** Validate the Polish postal code pattern during checkout and suggest city names where reliable reference data is available.
 
 ---
 
@@ -145,6 +158,7 @@ SET email = LOWER(TRIM(email));
 
 The normalized email address was later also used to identify duplicate customers.
 
+
 **Before cleaning**
 
 ![Inconsistent email addresses](image/raw_data/Emaile_customers.png)
@@ -153,6 +167,10 @@ The normalized email address was later also used to identify duplicate customers
 
 ![Emails after cleaning](image/clean_data/emaile_po_czyszczeniu.png)
 
+Lowercasing and trimming emails improves customer matching and duplicate detection, supporting more reliable customer counts and marketing communications.
+
+**Potential improvement:** Trim and validate email addresses when accounts are registered.
+
 ---
 
 #### 4. Typos and inconsistent city names
@@ -160,6 +178,7 @@ The normalized email address was later also used to identify duplicate customers
 The `city` column contained different variants of the same locality, such as `Warsszawa` and `Warszawa`, as well as inconsistent capitalization.
 
 Instead of creating many separate `UPDATE` statements, a mapping table was created to map incorrect variants to canonical city names. The shortened mapping example is shown below; the full list is included in the SQL script.
+
 
 ```sql
 CREATE TABLE IF NOT EXISTS city_mapping (
@@ -189,6 +208,10 @@ WHERE LOWER(c.city) = m.wariant;
 
 ![Cities after cleaning](image/clean_data/miasta_po_czyszczeniu.png)
 
+A mapping table is easier to maintain than many unrelated update statements. Consistent city labels improve regional sales reports and enable more accurate location-based campaigns.
+
+**Potential improvement:** Provide city autocomplete from a controlled list during address entry.
+
 ---
 
 #### 5. Duplicate customers
@@ -198,6 +221,7 @@ Records belonging to customers with the same normalized email address were detec
 Duplicates were merged based on `LOWER(TRIM(email))`. The customer with the earliest registration date was retained; in the event of a tie, the customer with the lowest `customer_id` was retained.
 
 Before deleting duplicates, their orders were reassigned to the retained customer record. This prevented the loss of purchase history.
+
 
 ```sql
 WITH ranked AS (
@@ -248,6 +272,10 @@ WHERE customer_id IN (
 
 ![Duplicate customers](image/raw_data/duplikaty_klient%C3%B3w_customers.png)
 
+Keeping one customer record and transferring related orders prevents inflated customer counts while preserving purchase history for retention, purchase-frequency, and customer lifetime value analysis.
+
+**Potential improvement:** Check for existing accounts during sign-up and offer an account recovery flow.
+
 ---
 
 #### 6. Additional duplicates with the `_dup` suffix
@@ -262,6 +290,7 @@ jan.kowalski_dup@gmail.com
 These records were not detected by standard grouping based on identical normalized email addresses, so an additional identification rule was required.
 
 First, orders were reassigned to the original customer. The technical duplicates with the `_dup` suffix were then removed.
+
 
 ```sql
 UPDATE orders o
@@ -286,6 +315,10 @@ WHERE o.customer_id = p.stary_id;
 
 ![Emails after cleaning](image/clean_data/emaile_po_czyszczeniu.png)
 
+Technical `_dup` email variants would not match a basic duplicate search. Resolving them to the original accounts reduces double-counting while preserving order history.
+
+**Potential improvement:** Validate duplicate records during imports and record the origin of incoming data.
+
 ---
 
 #### 7. Customers without orders
@@ -293,6 +326,10 @@ WHERE o.customer_id = p.stary_id;
 Customers who had created an account but had not placed any orders were identified.
 
 These records were not deleted because they do not represent a data error. A `klienci_bez_zamowien` view was created to enable further analysis of this segment in terms of customer activation, retention, and conversion.
+
+Customers without purchases are not necessarily erroneous records. Keeping them in a dedicated view makes it possible to investigate first-purchase conversion and activation opportunities.
+
+**Potential improvement:** Study registration-to-purchase drop-off and test activation campaigns, such as a welcome offer.
 
 ```sql
 CREATE OR REPLACE VIEW klienci_bez_zamowien AS
@@ -315,6 +352,7 @@ Products with a `unit_price` of `0` were found in the catalog.
 
 These records were neither automatically deleted nor assigned an artificially calculated price. They were marked for review because, without additional business information, it was impossible to determine unambiguously whether the price was incorrect.
 
+
 ```sql
 ALTER TABLE products
 ADD COLUMN IF NOT EXISTS wymaga_weryfikacji BOOLEAN DEFAULT FALSE;
@@ -332,6 +370,10 @@ WHERE unit_price <= 0;
 
 ![Products with flagged prices](image/clean_data/cena_oflagowana.png)
 
+Zero-priced products may be errors, free gifts, or promotions. Flagging them avoids inventing prices while keeping records available for revenue and profitability checks.
+
+**Potential improvement:** Validate product prices at catalog entry and require an explanation for a zero price.
+
 ---
 
 #### 2. Inconsistent product categories
@@ -339,6 +381,7 @@ WHERE unit_price <= 0;
 Category names appeared in different variants: with different capitalization, additional spaces, and Polish or English wording.
 
 Categories were standardized to a single set of values. Example:
+
 
 ```sql
 UPDATE products
@@ -362,6 +405,9 @@ WHERE LOWER(TRIM(category)) IN ('uroda', 'beauty');
 
 ![Categories after cleaning](image/clean_data/kategorie_po_czyszczeniu.png)
 
+A consistent category dictionary prevents sales from being split across multiple spellings or languages. This supports accurate category comparisons and assortment decisions.
+
+**Potential improvement:** Use a controlled category dropdown rather than free-text entry.
 ---
 
 #### 3. Product price outliers
@@ -398,6 +444,9 @@ The records were not deleted automatically because a high product price does not
 
 ![Products with unusual prices](image/raw_data/produkty_z_dziwn%C4%85_cen%C4%85.png)
 
+Using separate category thresholds accounts for differences in typical prices across product types. Outliers were not removed automatically because they may represent genuine premium products, and excluding them could distort sales and profitability analyses.
+
+**Potential improvement:** Alert catalog managers when a product price differs substantially from the typical range for its category.
 ---
 
 ### 🧾 `orders` table
@@ -432,6 +481,10 @@ WHERE order_id IN (
 
 ![Duplicate orders](image/raw_data/duplikaty_zam%C3%B3wie%C5%84_orders.png)
 
+Removing true duplicate transactions would prevent overstated order counts and revenue. However, the script groups by customer and order date, which is not sufficient on its own to prove that two transactions are duplicates.
+
+**Potential improvement:** Use a unique checkout or payment transaction identifier and compare order contents before deleting potential duplicates.
+
 ---
 
 #### 2. Inconsistent date formats
@@ -443,6 +496,8 @@ Order dates appeared in several formats, for example:
 - `2024-12-26`.
 
 The dates were first standardized to the `YYYY-MM-DD` format, after which the column type was changed to `DATE`.
+
+
 
 ```sql
 UPDATE orders
@@ -472,6 +527,11 @@ USING order_date::DATE;
 
 ![Dates after correction](image/clean_data/daty_po_naprawie.png)
 
+
+Converting order dates to the `DATE` type supports dependable sorting, filtering, monthly comparisons, and seasonality analysis.
+
+**Potential improvement:** Store dates as a database date type from the beginning instead of text.
+
 ---
 
 #### 3. Missing payment methods
@@ -493,7 +553,12 @@ GROUP BY order_status;
 
 The missing values occurred in cancelled orders (`Cancelled`), so they were considered logically acceptable and left unchanged.
 
+
 ![Missing payment methods](image/raw_data/Tabela_order_payment_method.png)
+
+An empty payment method is missing information, not a distinct payment type. The missing values were found in cancelled orders and were therefore retained as `NULL` instead of being assigned made-up payment methods.
+
+**Potential improvement:** Require a payment method only at the appropriate checkout stage and distinguish unselected, failed, and cancelled payments.
 
 ---
 
@@ -524,6 +589,7 @@ WHERE quantity < 0;
 
 This approach separated sales from returns without losing information about the returned quantity.
 
+
 **Negative `quantity` values**
 
 ![Negative quantity values](image/raw_data/ujemne_quantity_order_items.png)
@@ -531,6 +597,10 @@ This approach separated sales from returns without losing information about the 
 **`returns` table**
 
 ![Returns table](image/clean_data/return.png)
+
+Negative quantities were interpreted in this dataset as returns and moved to a separate table. This allows sales volumes and returns to be examined separately rather than mixing the two in standard order lines.
+
+**Potential improvement:** Introduce a dedicated return workflow that records the reason and actual date of each return.
 
 ---
 
@@ -574,6 +644,9 @@ This preserved historical sales data and restored consistency between the tables
 
 ![Archived product](image/clean_data/Produkt_zarchiwizowany.png)
 
+Assigning missing product references to a technical archived product preserved historical order items and restored a valid link to the product table instead of deleting sales history.
+
+**Potential improvement:** Deactivate discontinued catalog items rather than physically deleting them, so past orders retain their original product references.
 ---
 
 ### 🏭 `inventory` table
@@ -586,6 +659,7 @@ Values below zero appeared in the `stock_quantity` column.
 
 Negative values were replaced with `0` because physical inventory cannot be negative. These records still require business verification to determine the cause of the issue.
 
+
 ```sql
 UPDATE inventory
 SET stock_quantity = 0
@@ -594,11 +668,16 @@ WHERE stock_quantity < 0;
 
 ![Negative inventory levels](image/raw_data/ujemne_stock_quantity_inventory.png)
 
+Replacing negative quantities with zero avoids negative physical availability in stock reports. The original discrepancies still need investigation because they may reflect overselling or synchronization issues.
+
+**Potential improvement:** Check available stock when confirming orders and synchronize inventory updates.
+
 ---
 
 #### 2. Unnecessary spaces in warehouse locations
 
 The `warehouse_location` column contained extra spaces. The values were cleaned using the `TRIM()` function.
+
 
 ```sql
 UPDATE inventory
@@ -613,6 +692,9 @@ SET warehouse_location = TRIM(warehouse_location);
 
 ![Warehouse locations without unnecessary spaces](image/clean_data/warehouse_bez_spacji.png)
 
+Trimming warehouse names prevents one physical location from appearing as multiple categories in reporting and helps warehouse staff search consistently.
+
+**Potential improvement:** Use standard location codes or a controlled list, potentially supported by barcode scanners.
 ---
 
 ## ✅ Summary
