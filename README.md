@@ -4,7 +4,37 @@
 
 The objective of this project was to thoroughly clean and prepare sales data from the simulated **ShopFlow** online store for further analysis.
 
-## 📌 Project description
+## 📚 Table of Contents
+
+
+- [📌 Dataset description](#-dataset-description)
+- [🧹 Data cleaning and preparation](#-data-cleaning-and-preparation)
+- [Cleaning Steps](#cleaning-steps)
+  - [👤 `customers` table](#-customers-table)
+    - [1. Inconsistent phone number formats](#1-inconsistent-phone-number-formats)
+    - [2. Invalid postal codes](#2-invalid-postal-codes)
+    - [3. Inconsistent email addresses](#3-inconsistent-email-addresses)
+    - [4. Typos and inconsistent city names](#4-typos-and-inconsistent-city-names)
+    - [5. Duplicate customers](#5-duplicate-customers)
+    - [6. Additional duplicates with the `_dup` suffix](#6-additional-duplicates-with-the-_dup-suffix)
+    - [7. Customers without orders](#7-customers-without-orders)
+  - [📦 `products` table](#-products-table)
+    - [1. Products with a price of `0`](#1-products-with-a-price-of-0)
+    - [2. Inconsistent product categories](#2-inconsistent-product-categories)
+    - [3. Product price outliers](#3-product-price-outliers)
+  - [🧾 `orders` table](#-orders-table)
+    - [1. Duplicate orders](#1-duplicate-orders)
+    - [2. Inconsistent date formats](#2-inconsistent-date-formats)
+    - [3. Missing payment methods](#3-missing-payment-methods)
+  - [🛒 `order_items` table](#-order_items-table)
+    - [1. Negative `quantity` values](#1-negative-quantity-values)
+    - [2. Orphaned `product_id` values](#2-orphaned-product_id-values)
+  - [🏭 `inventory` table](#-inventory-table)
+    - [1. Negative inventory levels](#1-negative-inventory-levels)
+    - [2. Unnecessary spaces in warehouse locations](#2-unnecessary-spaces-in-warehouse-locations)
+- [✅ Summary](#-summary)
+
+## 📌 Dataset description
 
 The data comes from the simulated **ShopFlow** online store operating in the Polish e-commerce market, covering areas such as:
 
@@ -38,14 +68,14 @@ The following issues were identified, among others:
 The most important issues and selected SQL fragments showing how they were addressed are presented below. All queries are included in the project's main SQL script.
 
 ---
-
-## 👤 `customers` table
+## Cleaning Steps 
+### 👤 `customers` table
 
 The `customers` table was checked for duplicate `customer_id` values, valid first and last names, empty values, unnecessary spaces, and the presence of digits or unwanted characters.
 
 No errors were found in the `customer_id`, `first_name`, or `last_name` columns.
 
-### 1. Inconsistent phone number formats
+#### 1. Inconsistent phone number formats
 
 Phone numbers appeared in many different formats, including numbers with the `+48` prefix, without the prefix, and with spaces or hyphens.
 
@@ -80,7 +110,7 @@ WHERE phone <> 'unknown'
 
 ---
 
-### 2. Invalid postal codes
+#### 2. Invalid postal codes
 
 Some values in the `postal_code` column did not follow the Polish `XX-XXX` format.
 
@@ -102,7 +132,7 @@ WHERE postal_code !~ '^\d{2}-\d{3}$';
 
 ---
 
-### 3. Inconsistent email addresses
+#### 3. Inconsistent email addresses
 
 Email addresses differed in letter case, contained unnecessary spaces, or lacked a consistent format.
 
@@ -125,7 +155,7 @@ The normalized email address was later also used to identify duplicate customers
 
 ---
 
-### 4. Typos and inconsistent city names
+#### 4. Typos and inconsistent city names
 
 The `city` column contained different variants of the same locality, such as `Warsszawa` and `Warszawa`, as well as inconsistent capitalization.
 
@@ -161,7 +191,7 @@ WHERE LOWER(c.city) = m.wariant;
 
 ---
 
-### 5. Duplicate customers
+#### 5. Duplicate customers
 
 Records belonging to customers with the same normalized email address were detected.
 
@@ -220,7 +250,7 @@ WHERE customer_id IN (
 
 ---
 
-### 6. Additional duplicates with the `_dup` suffix
+#### 6. Additional duplicates with the `_dup` suffix
 
 Some duplicates had a modified email address, for example:
 
@@ -258,7 +288,7 @@ WHERE o.customer_id = p.stary_id;
 
 ---
 
-### 7. Customers without orders
+#### 7. Customers without orders
 
 Customers who had created an account but had not placed any orders were identified.
 
@@ -275,11 +305,11 @@ WHERE o.order_id IS NULL;
 
 ---
 
-## 📦 `products` table
+### 📦 `products` table
 
 The main issues in the products table concerned prices and inconsistent product categories.
 
-### 1. Products with a price of `0`
+#### 1. Products with a price of `0`
 
 Products with a `unit_price` of `0` were found in the catalog.
 
@@ -304,7 +334,7 @@ WHERE unit_price <= 0;
 
 ---
 
-### 2. Inconsistent product categories
+#### 2. Inconsistent product categories
 
 Category names appeared in different variants: with different capitalization, additional spaces, and Polish or English wording.
 
@@ -334,7 +364,7 @@ WHERE LOWER(TRIM(category)) IN ('uroda', 'beauty');
 
 ---
 
-### 3. Product price outliers
+#### 3. Product price outliers
 
 The data contained products with prices significantly higher than typical prices in their respective categories.
 
@@ -370,11 +400,11 @@ The records were not deleted automatically because a high product price does not
 
 ---
 
-## 🧾 `orders` table
+### 🧾 `orders` table
 
 The following issues were identified in the orders table: duplicate records, inconsistent date formats, and missing payment methods.
 
-### 1. Duplicate orders
+#### 1. Duplicate orders
 
 Customers with more than one order placed on the same date were detected.
 
@@ -404,7 +434,7 @@ WHERE order_id IN (
 
 ---
 
-### 2. Inconsistent date formats
+#### 2. Inconsistent date formats
 
 Order dates appeared in several formats, for example:
 
@@ -444,7 +474,7 @@ USING order_date::DATE;
 
 ---
 
-### 3. Missing payment methods
+#### 3. Missing payment methods
 
 The `payment_method` column contained empty values stored as empty strings.
 
@@ -467,9 +497,9 @@ The missing values occurred in cancelled orders (`Cancelled`), so they were cons
 
 ---
 
-## 🛒 `order_items` table
+### 🛒 `order_items` table
 
-### 1. Negative `quantity` values
+#### 1. Negative `quantity` values
 
 Records with a negative number of products appeared in the order items table.
 
@@ -504,7 +534,7 @@ This approach separated sales from returns without losing information about the 
 
 ---
 
-### 2. Orphaned `product_id` values
+#### 2. Orphaned `product_id` values
 
 The `order_items` table contained orphaned `product_id` values: records referring to products that no longer existed in the `products` table.
 
@@ -546,11 +576,11 @@ This preserved historical sales data and restored consistency between the tables
 
 ---
 
-## 🏭 `inventory` table
+### 🏭 `inventory` table
 
 The inventory data contained issues related to stock levels and location formatting.
 
-### 1. Negative inventory levels
+#### 1. Negative inventory levels
 
 Values below zero appeared in the `stock_quantity` column.
 
@@ -566,7 +596,7 @@ WHERE stock_quantity < 0;
 
 ---
 
-### 2. Unnecessary spaces in warehouse locations
+#### 2. Unnecessary spaces in warehouse locations
 
 The `warehouse_location` column contained extra spaces. The values were cleaned using the `TRIM()` function.
 
