@@ -116,6 +116,7 @@ WHERE phone <> 'unknown'
 Standardizing numbers to `+48XXXXXXXXX` helps customer service agents contact buyers and makes phone data easier to use in CRM tools and automated notifications. Missing numbers were labeled `unknown` rather than removing otherwise useful customer records.
 
 **Potential improvement:** Add a separate country calling code field and validate the length and format when a number is entered.
+
 ---
 
 #### 2. Invalid postal codes
@@ -327,9 +328,6 @@ Customers who had created an account but had not placed any orders were identifi
 
 These records were not deleted because they do not represent a data error. A `klienci_bez_zamowien` view was created to enable further analysis of this segment in terms of customer activation, retention, and conversion.
 
-Customers without purchases are not necessarily erroneous records. Keeping them in a dedicated view makes it possible to investigate first-purchase conversion and activation opportunities.
-
-**Potential improvement:** Study registration-to-purchase drop-off and test activation campaigns, such as a welcome offer.
 
 ```sql
 CREATE OR REPLACE VIEW klienci_bez_zamowien AS
@@ -339,6 +337,9 @@ LEFT JOIN orders o
   ON c.customer_id = o.customer_id
 WHERE o.order_id IS NULL;
 ```
+Customers without purchases are not necessarily erroneous records. Keeping them in a dedicated view makes it possible to investigate first-purchase conversion and activation opportunities.
+
+**Potential improvement:** Study registration-to-purchase drop-off and test activation campaigns, such as a welcome offer.
 
 ---
 
@@ -408,6 +409,7 @@ WHERE LOWER(TRIM(category)) IN ('uroda', 'beauty');
 A consistent category dictionary prevents sales from being split across multiple spellings or languages. This supports accurate category comparisons and assortment decisions.
 
 **Potential improvement:** Use a controlled category dropdown rather than free-text entry.
+
 ---
 
 #### 3. Product price outliers
@@ -447,6 +449,7 @@ The records were not deleted automatically because a high product price does not
 Using separate category thresholds accounts for differences in typical prices across product types. Outliers were not removed automatically because they may represent genuine premium products, and excluding them could distort sales and profitability analyses.
 
 **Potential improvement:** Alert catalog managers when a product price differs substantially from the typical range for its category.
+
 ---
 
 ### 🧾 `orders` table
@@ -647,6 +650,7 @@ This preserved historical sales data and restored consistency between the tables
 Assigning missing product references to a technical archived product preserved historical order items and restored a valid link to the product table instead of deleting sales history.
 
 **Potential improvement:** Deactivate discontinued catalog items rather than physically deleting them, so past orders retain their original product references.
+
 ---
 
 ### 🏭 `inventory` table
@@ -695,6 +699,7 @@ SET warehouse_location = TRIM(warehouse_location);
 Trimming warehouse names prevents one physical location from appearing as multiple categories in reporting and helps warehouse staff search consistently.
 
 **Potential improvement:** Use standard location codes or a controlled list, potentially supported by barcode scanners.
+
 ---
 
 ## ✅ Summary
