@@ -106,7 +106,7 @@ WHERE phone <> 'unknown'
 
 **Missing phone numbers marked as `unknown`**
 
-![Missing phone numbers marked as unknown](image/oczyszczone_dane/telefony_unknown.png)
+![Missing phone numbers marked as unknown](image/clean_data/telefony_unknown.png)
 
 ---
 
@@ -627,4 +627,4 @@ As part of the project:
 - historical data was preserved wherever automatic deletion could have led to information loss,
 - additional supporting structures were created, including the `returns` table, the `city_mapping` table, and the `klienci_bez_zamowien` view.
 
-The cleaned data was used for the actual analysis.
+The cleaned data was used for the actual analysis [ShopFlow – E-commerce Data Analysis](https://github.com/Arturstrag/ShopFlow-E-commerce-Data-Analysis)
